@@ -1,9 +1,17 @@
 from flask import Flask
 from flask import request
 from flask_cors import CORS
+from database import db_session
+from database import init_db
+from models import User
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+init_db()
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
 
 @app.route('/')
 def hello_world():
@@ -15,9 +23,6 @@ def login():
     username = request.args.get("username")
     password = request.args.get("password")
 
-    print(username=="xiuyuan")
-    print(validate(username,password))
-
     if validate(username, password) is True:
         return "{\"login_status\":\"success\"}"
     else:
@@ -28,3 +33,10 @@ def validate(username, password):
 
 if __name__ == '__main__':
     app.run()
+
+@app.route('/insertDB')
+def insertDB():
+    admin_user = User('guest','guest')
+    db_session.add(admin_user)
+    db_session.commit()
+    return "added"
